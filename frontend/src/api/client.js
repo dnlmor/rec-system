@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Get base URL from environment variable or fall back to local dev
-const rawBaseUrl = import.meta.env.VITE_API_URL || 'https://recmate.onrender.com';
+const rawBaseUrl = import.meta.env.VITE_API_URL || 'https://recmate-api.onrender.com';
 
 // Ensure the baseURL points to the /api/v1 prefix without trailing slashes
 const BASE_URL = rawBaseUrl.endsWith('/api/v1')
