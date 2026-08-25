@@ -61,4 +61,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Lightweight keep-alive health check endpoint
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "RecMate API"}
+
 app.include_router(router, prefix="/api/v1")
