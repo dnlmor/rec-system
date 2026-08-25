@@ -3,29 +3,62 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.api.routes import router
 from app.ml.model_loader import model_store
+import pandas as pd
+import numpy as np
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
+def load_stratified_sample(events_path: str, n_samples: int = 10):
+    # Load raw behavior events
+    df = pd.read_csv(events_path)
+    
+    # Compute interaction metrics per visitor
+    user_stats = df.groupby('visitorid').agg(
+        views=('event', lambda x: (x == 'view').sum()),
+        carts=('event', lambda x: (x == 'addtocart').sum()),
+        buys=('event', lambda x: (x == 'transaction').sum()),
+        total_events=('event', 'count')
+    ).reset_index()
+
+    # Stratify into 5 activity/behavior segments
+    user_stats['strata'] = pd.qcut(
+        user_stats['total_events'], 
+        q=5, 
+        labels=['Casual Browser', 'Active Explorer', 'Consideration Shopper', 'High Intent', 'Power User'],
+        duplicates='drop'
+    )
+
+    # Sample equally across strata to get exactly 10 users
+    sampled = user_stats.groupby('strata', observed=False).apply(
+        lambda x: x.sample(n=min(len(x), max(1, n_samples // 5)), random_state=42)
+    ).reset_index(drop=True).head(n_samples)
+
+    # Add visitor_id alias and segment field for the UI
+    sampled['visitor_id'] = sampled['visitorid']
+    sampled['segment'] = sampled['strata']
+
+    return sampled.to_dict(orient='records')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Load ML models and JSON lookups
     model_store.load_artifacts()
     yield
-    # Shutdown logic (if any)
 
 app = FastAPI(
-    title="Hybrid E-Commerce Recommender API",
-    description="FastAPI service serving Cosine Similarity Recommendations & Random Forest Conversion Predictions",
+    title="RecMate Recommender API",
+    description="FastAPI service serving Cosine Similarity Recommendations & Conversion Predictions",
     version="1.0.0",
     lifespan=lifespan
 )
 
-# Enable CORS for local testing & Render production deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows requests from React local dev server & Render URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register routes under /api/v1
 app.include_router(router, prefix="/api/v1")
