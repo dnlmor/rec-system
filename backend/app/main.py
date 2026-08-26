@@ -46,18 +46,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Explicitly list production and local development origins
-origins = [
-    "https://recmate.onrender.com",
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://localhost:8000",
-]
-
+# Set wildcard origin with allow_credentials=False to bypass preflight CORS blocks
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
