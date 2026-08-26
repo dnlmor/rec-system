@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-// Get base URL from environment variable or fall back to local dev
-const rawBaseUrl = import.meta.env.VITE_API_URL || 'https://recmate-api.onrender.com';
+const rawBaseUrl = import.meta.env.VITE_API_URL || 'https://recmate-backend.onrender.com';
 
-// Ensure the baseURL points to the /api/v1 prefix without trailing slashes
 const BASE_URL = rawBaseUrl.endsWith('/api/v1')
   ? rawBaseUrl
   : `${rawBaseUrl.replace(/\/+$/, '')}/api/v1`;
@@ -13,7 +11,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 10000,
 });
 
 export const fetchProducts = async (limit = 20) => {
