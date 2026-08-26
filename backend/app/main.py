@@ -46,7 +46,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Set wildcard origin with allow_credentials=False to bypass preflight CORS blocks
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -55,8 +54,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Root endpoint to confirm server health on base URL
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "RecMate API Root"}
+
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "RecMate API"}
 
+# Include API router under /api/v1 prefix
 app.include_router(router, prefix="/api/v1")

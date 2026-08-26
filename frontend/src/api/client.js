@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const rawBaseUrl = import.meta.env.VITE_API_URL || 'https://recmate-backend.onrender.com';
+const rawBaseUrl = import.meta.env.VITE_API_URL || 'https://recmate-api.onrender.com';
 
 const BASE_URL = rawBaseUrl.endsWith('/api/v1')
   ? rawBaseUrl
